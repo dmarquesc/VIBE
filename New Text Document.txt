@@ -1,3 +1,0 @@
-.\Start-VIBE.ps1
-
-.\Stop-VIBE.ps1
