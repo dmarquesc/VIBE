@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>V.I.B.E. — Very Intelligent Buddy for Everything</title>
+    <meta name="description" content="V.I.B.E. Phase 1: liquid-metal head + hands, browser-native, Ollama-powered." />
+    <meta name="author" content="D'Marques Coleman" />
+    <meta name="keywords" content="VIBE, AI assistant, WebGL, React Three Fiber, Ollama" />
+
+    <!-- Dark UI hint & theme color -->
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0a0a12" />
+
+    <!-- Favicon (optional — keep if you have one) -->
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- Build 1 is non-PWA; we’ll add manifest/service worker in Build 2 -->
+    <!-- <link rel="manifest" href="/manifest.webmanifest" /> -->
+
+    <!-- Tiny fallback so the page isn't blank even if CSS import fails -->
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #0a0a12; }
+    </style>
+  </head>
+
+  <body>
+    <noscript>This app requires JavaScript for the 3D experience.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

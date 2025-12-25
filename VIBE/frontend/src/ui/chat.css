@@ -1,0 +1,158 @@
+/* =======================================================================
+   V.I.B.E. — Cinematic Chat Overlay
+   File: src/ui/chat.css
+   ======================================================================= */
+
+/* ----- Scene signals (wired by JS/Three) -------------------------------- */
+:root{
+  --vibe-breath: .5; /* 0..1 breathing phase; you can drive this from LiquidHead */
+  --vibe-busy: 0;    /* 0 idle, 1 thinking; toggled by chatBus setBusy(true/false) */
+}
+
+/* ----- App scaffold ------------------------------------------------------ */
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  color: #e8f3ff;
+  background: #070a12;
+  overflow: hidden;
+}
+
+/* Subtle global vignette for depth */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 45% at 50% 30%,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,.25) 60%,
+    rgba(0,0,0,.55) 100%);
+  z-index: 1;
+}
+
+/* ----- Recent chat “bubbles” (ambient, non-blocking) -------------------- */
+.chat-history {
+  position: fixed;
+  top: 18vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 10px;
+  width: min(70vw, 820px);
+  z-index: 3;
+  pointer-events: none; /* never blocks the orb */
+}
+
+.bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  color: #dfe9ff;
+  background: rgba(15, 25, 44, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  width: max-content;
+  max-width: 100%;
+}
+.bubble.user      { background: rgba(28, 41, 72, 0.60); }
+.bubble.assistant { background: rgba(19, 33, 58, 0.60); }
+
+/* ----- ORB BED (cinematic glow under the orb) --------------------------- */
+.orb-bed{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: clamp(96px, 14vh, 180px);       /* sits just above the input bar */
+  width: clamp(520px, 46vw, 960px);
+  height: clamp(120px, 18vh, 220px);
+  border-radius: 50%;
+  pointer-events: none;                    /* never blocks input/scene */
+  z-index: 2;                              /* under glass, over background */
+  filter: blur(28px);
+  opacity: calc(0.42 + 0.28*var(--vibe-breath, .5) + 0.18*var(--vibe-busy, 0));
+  background:
+    radial-gradient(60% 120% at 50% 0%,
+      rgba(56,193,255,.18) 0%,
+      rgba(56,193,255,.08) 40%,
+      rgba(0,0,0,0) 70%);
+  transition: opacity .35s ease, filter .35s ease, transform .35s ease;
+}
+/* Optional: stronger while thinking (toggle body.thinking in JS) */
+body.thinking .orb-bed{ opacity: .95; filter: blur(34px); }
+
+/* ----- Glass input bar -------------------------------------------------- */
+.glass-wrap{
+  position: fixed; inset: 0;
+  display: grid; place-items: end center; /* anchors to bottom center */
+  padding: clamp(16px, 3vh, 28px);
+  pointer-events: none;                    /* container lets events pass */
+  z-index: 4;                              /* above orb bed */
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+.glass-wrap.show{ opacity: 1; transform: translateY(0); }
+.glass-wrap.hide{ opacity: 0; transform: translateY(8px); }
+
+/* The bar itself regains pointer events */
+.glass{
+  pointer-events: auto;
+  width: min(980px, 88vw);
+  min-height: 64px;
+  border-radius: 16px;
+  padding: 10px 14px;
+
+  display: grid;
+  grid-template-columns: 40px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+
+  background: linear-gradient(180deg, rgba(12,20,36,.45), rgba(12,20,36,.35));
+  border: 1px solid rgba(130,200,255,.14);
+  box-shadow:
+    0 20px 70px rgba(46,120,255,.14),
+    inset 0 0 0 1px rgba(120,200,255,.06);
+  backdrop-filter: blur(16px) saturate(1.05);
+  -webkit-backdrop-filter: blur(16px) saturate(1.05);
+}
+
+/* Controls */
+.icon-btn{
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(130,200,255,.14);
+  background: rgba(18,28,46,.55);
+  color: #bfe8ff;
+  cursor: pointer;
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+}
+.icon-btn:hover{ transform: translateY(-1px); background: rgba(24,36,60,.65); }
+.icon-btn:active{ transform: translateY(0); }
+.icon-btn:disabled{ opacity: .55; cursor: default; }
+.icon-btn.send{ width: 56px; }
+
+/* Input */
+.glass-input{
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  color: #e6f4ff;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+.glass-input::placeholder{ color: rgba(214,238,255,.65); }
+
+/* ----- Accessibility / Responsiveness ---------------------------------- */
+@media (max-width: 640px){
+  .chat-history{ top: 14vh; width: min(84vw, 560px); }
+  .glass{ grid-template-columns: 40px 1fr 48px; }
+  .icon-btn.send{ width: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+}
