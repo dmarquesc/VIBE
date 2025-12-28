@@ -9,7 +9,10 @@
 // - Prepares visuals + operator UI safely
 // =============================================================
 
-import "dotenv/config";
+// ✅ FIXED dotenv import (Node 18+ / Node 22 / ESM safe)
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
@@ -211,4 +214,3 @@ app.listen(PORT, () => {
   console.log(`[V.I.B.E] CPU-only enforced`);
   console.log(`[V.I.B.E] Kernel v2.3 ACTIVE`);
 });
-
