@@ -44,7 +44,9 @@ export default function LiquidHead({
       toneMapped: true,
     });
 
-    (m as any).onBeforeCompile = (shader: THREE.Shader) => {
+    // NOTE: THREE.Shader is not exported in current typings
+    // Using `any` here is correct and safe for onBeforeCompile
+    (m as any).onBeforeCompile = (shader: any) => {
       // -------- uniforms --------
       shader.uniforms.uTime = { value: 0 };
       shader.uniforms.uEnergy = { value: energy };
@@ -88,7 +90,6 @@ export default function LiquidHead({
         return normalize(vec3(dy-dz, dz-dx, dx-dy));
       }`;
 
-      // -------- vertex --------
       shader.vertexShader =
         `
         uniform float uTime, uEnergy, uIdle, uSurfFreq, uSurfAmp, uSurfFlow;
@@ -116,7 +117,6 @@ export default function LiquidHead({
         `
       );
 
-      // -------- fragment --------
       shader.fragmentShader =
         `
         uniform float uTime, uEnergy;
@@ -168,11 +168,8 @@ export default function LiquidHead({
     const s = (mat as any).userData?.shader;
     if (s) {
       s.uniforms.uTime.value = tRef.current;
-
-      // idle breathing surface
       s.uniforms.uIdle.value = 0.015 * Math.sin(tRef.current * 1.15);
 
-      // energy smoothing + speaking pulse
       const target = Math.min(1, energy * (busy ? 1.3 : 1.0));
       s.uniforms.uEnergy.value = THREE.MathUtils.lerp(
         s.uniforms.uEnergy.value,
@@ -181,15 +178,12 @@ export default function LiquidHead({
       );
     }
 
-    // scale breathing
     const base = 1.0 + 0.02 * Math.sin(tRef.current * 1.1);
     const pulse = Math.max(0, energy - 0.4) * 0.08;
     meshRef.current.scale.setScalar(base + pulse);
 
-    // hover
     meshRef.current.position.y = 0.045 * Math.sin(tRef.current * 0.9);
 
-    // thinking rotation
     if (busy) {
       meshRef.current.rotation.y += dt * 0.25;
     }

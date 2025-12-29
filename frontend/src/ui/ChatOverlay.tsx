@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { chatBus } from "./chatBus";
+import { DEMO_MODE } from "../config";
+import { demoReply } from "./demoResponder";
 
 type Message = {
   role: "user" | "assistant";
@@ -20,13 +22,21 @@ export default function ChatOverlay() {
       setBusy(false);
     });
 
-    const offAssistant = chatBus.on("assistant:message", (msg: Message) => {
-      setMessages((m) => [...m, msg]);
-    });
+    const offAssistant = chatBus.on(
+      "assistant:message",
+      (msg?: Message) => {
+        if (!msg) return;
+        setMessages((m) => [...m, msg]);
+      }
+    );
 
-    const offUser = chatBus.on("user:message", (msg: Message) => {
-      setMessages((m) => [...m, msg]);
-    });
+    const offUser = chatBus.on(
+      "user:message",
+      (msg?: Message) => {
+        if (!msg) return;
+        setMessages((m) => [...m, msg]);
+      }
+    );
 
     return () => {
       offThinkingStart();
@@ -39,14 +49,37 @@ export default function ChatOverlay() {
   function send() {
     if (!input.trim() || busy) return;
 
-    chatBus.emit("thinking:start");
+    const userText = input.trim();
 
+    // Show user message immediately
     chatBus.emit("user:message", {
       role: "user",
-      content: input.trim(),
+      content: userText,
     });
 
     setInput("");
+
+    // ---------------------------
+    // DEMO MODE (GitHub Pages)
+    // ---------------------------
+    if (DEMO_MODE) {
+      setBusy(true);
+
+      setTimeout(() => {
+        chatBus.emit("assistant:message", {
+          role: "assistant",
+          content: demoReply(userText),
+        });
+        setBusy(false);
+      }, 600);
+
+      return;
+    }
+
+    // ---------------------------
+    // REAL BACKEND (LOCAL ONLY)
+    // ---------------------------
+    chatBus.emit("thinking:start");
   }
 
   return (
@@ -61,6 +94,19 @@ export default function ChatOverlay() {
         fontFamily: "system-ui, sans-serif",
       }}
     >
+      {/* Demo badge */}
+      {DEMO_MODE && (
+        <div
+          style={{
+            fontSize: 11,
+            opacity: 0.6,
+            marginBottom: 6,
+          }}
+        >
+          Demo Mode • Local AI runs offline
+        </div>
+      )}
+
       {/* Message stack */}
       <div
         style={{
@@ -128,6 +174,8 @@ export default function ChatOverlay() {
     </div>
   );
 }
+
+
 
 
 
